@@ -1,84 +1,243 @@
 {
-  "name": "antigravity-account-switcher",
-  "displayName": "Antigravity Multi-Account Switcher (macOS Native)",
-  "description": "Native macOS multi-account session manager for Antigravity IDE. One-click profile switching to bypass model rate limits without external dependencies.",
-  "version": "2.1.0",
+  "name": "antigravity-profile-pilot",
+  "displayName": "Profile Pilot for Antigravity (macOS & Windows)",
+  "description": "Smart multi-account profile pilot and quota manager for Antigravity IDE and App. 1-click account switching to bypass Gemini & Claude rate limits with real-time quota drill-downs.",
+  "version": "1.0.0",
   "publisher": "local",
   "license": "MIT",
+  "icon": "resources/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/antigravity-account-switcher"
+    "url": "https://github.com/your-username/antigravity-profile-pilot"
   },
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Machine Learning"
   ],
   "keywords": [
     "antigravity",
+    "profile-pilot",
     "accounts",
     "profiles",
     "switcher",
     "rate-limit",
-    "macos"
+    "quota",
+    "gemini",
+    "claude",
+    "macos",
+    "windows"
   ],
   "main": "./extension.js",
   "activationEvents": [
     "*",
     "onStartupFinished",
-    "onCommand:antigravityAccountSwitcher.saveCurrentProfile",
-    "onCommand:antigravityAccountSwitcher.switchProfile",
-    "onCommand:antigravityAccountSwitcher.switchProfileSlot",
-    "onCommand:antigravityAccountSwitcher.deleteProfile",
-    "onCommand:antigravityAccountSwitcher.listProfiles"
+    "onView:antigravityProfilePilot.slotsView",
+    "onCommand:antigravityProfilePilot.saveCurrentProfile",
+    "onCommand:antigravityProfilePilot.switchProfile",
+    "onCommand:antigravityProfilePilot.switchProfileSlot",
+    "onCommand:antigravityProfilePilot.deleteProfile",
+    "onCommand:antigravityProfilePilot.listProfiles",
+    "onCommand:antigravityProfilePilot.refreshSlots",
+    "onCommand:antigravityProfilePilot.resetSlotLimits",
+    "onCommand:antigravityProfilePilot.selectActiveModel",
+    "onCommand:antigravityProfilePilot.addCustomModel",
+    "onCommand:antigravityProfilePilot.showUsageBreakdown",
+    "onCommand:antigravityProfilePilot.addNewAccountWizard",
+    "onCommand:antigravityProfilePilot.showQuickGuide"
   ],
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "antigravity-profile-pilot",
+          "title": "Profile Pilot",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "antigravity-profile-pilot": [
+        {
+          "id": "antigravityProfilePilot.slotsView",
+          "name": "Account Profiles & Quotas"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "antigravityAccountSwitcher.saveCurrentProfile",
-        "title": "Antigravity: Save Current Profile"
+        "command": "antigravityProfilePilot.addNewAccountWizard",
+        "title": "Add / Link Another Google Account",
+        "icon": "$(person-add)"
       },
       {
-        "command": "antigravityAccountSwitcher.switchProfile",
-        "title": "Antigravity: Switch Profile"
+        "command": "antigravityProfilePilot.saveCurrentProfile",
+        "title": "Profile Pilot: Save Current Profile",
+        "icon": "$(add)"
       },
       {
-        "command": "antigravityAccountSwitcher.switchProfileSlot",
-        "title": "Antigravity: Switch Profile Slot"
+        "command": "antigravityProfilePilot.switchProfile",
+        "title": "Profile Pilot: Switch Profile",
+        "icon": "$(arrow-swap)"
       },
       {
-        "command": "antigravityAccountSwitcher.deleteProfile",
-        "title": "Antigravity: Delete Profile"
+        "command": "antigravityProfilePilot.switchProfileSlot",
+        "title": "Switch to this Profile",
+        "icon": "$(play)"
       },
       {
-        "command": "antigravityAccountSwitcher.listProfiles",
-        "title": "Antigravity: List Profiles"
+        "command": "antigravityProfilePilot.selectActiveModel",
+        "title": "Select / Change Active AI Model",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "antigravityProfilePilot.addCustomModel",
+        "title": "Add Model to Dynamic Tracker",
+        "icon": "$(plus)"
+      },
+      {
+        "command": "antigravityProfilePilot.showUsageBreakdown",
+        "title": "View Usage & Quota Drill-Down",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "antigravityProfilePilot.showQuickGuide",
+        "title": "How to Add & Switch Accounts (Guide)",
+        "icon": "$(question)"
+      },
+      {
+        "command": "antigravityProfilePilot.saveToSpecificSlot",
+        "title": "Save Current Session to this Slot",
+        "icon": "$(save)"
+      },
+      {
+        "command": "antigravityProfilePilot.renameProfileSlot",
+        "title": "Rename Profile",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "antigravityProfilePilot.deleteProfileSlotDirect",
+        "title": "Clear / Delete Profile Slot",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "antigravityProfilePilot.resetSlotLimits",
+        "title": "Reset Rate Limit & Usage Counters",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "antigravityProfilePilot.showLimitDetails",
+        "title": "View Rate Limit Details",
+        "icon": "$(info)"
+      },
+      {
+        "command": "antigravityProfilePilot.deleteProfile",
+        "title": "Profile Pilot: Delete Profile"
+      },
+      {
+        "command": "antigravityProfilePilot.listProfiles",
+        "title": "Profile Pilot: List Profiles"
+      },
+      {
+        "command": "antigravityProfilePilot.refreshSlots",
+        "title": "Refresh Account Slots",
+        "icon": "$(refresh)"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "antigravityProfilePilot.addNewAccountWizard",
+          "when": "view == antigravityProfilePilot.slotsView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "antigravityProfilePilot.selectActiveModel",
+          "when": "view == antigravityProfilePilot.slotsView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "antigravityProfilePilot.showUsageBreakdown",
+          "when": "view == antigravityProfilePilot.slotsView",
+          "group": "navigation@3"
+        },
+        {
+          "command": "antigravityProfilePilot.showQuickGuide",
+          "when": "view == antigravityProfilePilot.slotsView",
+          "group": "navigation@4"
+        },
+        {
+          "command": "antigravityProfilePilot.refreshSlots",
+          "when": "view == antigravityProfilePilot.slotsView",
+          "group": "navigation@5"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "antigravityProfilePilot.switchProfileSlot",
+          "when": "view == antigravityProfilePilot.slotsView && viewItem == occupiedSlot",
+          "group": "inline@1"
+        },
+        {
+          "command": "antigravityProfilePilot.selectActiveModel",
+          "when": "view == antigravityProfilePilot.slotsView && (viewItem == activeSlot || viewItem == currentModelItem || viewItem == availableItem)",
+          "group": "inline@2"
+        },
+        {
+          "command": "antigravityProfilePilot.saveToSpecificSlot",
+          "when": "view == antigravityProfilePilot.slotsView && (viewItem == occupiedSlot || viewItem == activeSlot || viewItem == emptySlot)",
+          "group": "inline@3"
+        },
+        {
+          "command": "antigravityProfilePilot.resetSlotLimits",
+          "when": "view == antigravityProfilePilot.slotsView && (viewItem == occupiedSlot || viewItem == activeSlot || viewItem == limitItem || viewItem == quotaSummaryItem)",
+          "group": "inline@4"
+        },
+        {
+          "command": "antigravityProfilePilot.renameProfileSlot",
+          "when": "view == antigravityProfilePilot.slotsView && (viewItem == occupiedSlot || viewItem == activeSlot)",
+          "group": "inline@5"
+        },
+        {
+          "command": "antigravityProfilePilot.deleteProfileSlotDirect",
+          "when": "view == antigravityProfilePilot.slotsView && (viewItem == occupiedSlot || viewItem == activeSlot)",
+          "group": "inline@6"
+        }
+      ]
+    },
     "configuration": {
-      "title": "Antigravity Account Switcher",
+      "title": "Profile Pilot for Antigravity",
       "properties": {
-        "antigravityAccountSwitcher.maxProfiles": {
+        "antigravityProfilePilot.maxProfiles": {
           "type": "number",
           "default": 5,
           "minimum": 1,
           "maximum": 5,
-          "description": "Maximum number of profile slots shown in the status bar."
+          "description": "Maximum number of profile slots shown in the status bar and sidebar."
         },
-        "antigravityAccountSwitcher.rateLimitMonitor.enabled": {
+        "antigravityProfilePilot.customModels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Custom AI model names or endpoints to monitor in the quota tracker."
+        },
+        "antigravityProfilePilot.rateLimitMonitor.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable automatic rate limit detection from Antigravity log files."
+          "description": "Enable automatic rate limit detection from Antigravity AI logs."
         },
-        "antigravityAccountSwitcher.rateLimitMonitor.scanIntervalSeconds": {
+        "antigravityProfilePilot.rateLimitMonitor.scanIntervalSeconds": {
           "type": "number",
           "default": 15,
           "minimum": 5,
           "maximum": 300,
-          "description": "How often Antigravity logs are scanned for rate limit messages (in seconds)."
+          "description": "How often Antigravity AI logs are scanned for rate limit messages (in seconds)."
         },
-        "antigravityAccountSwitcher.rateLimitMonitor.cooldownSeconds": {
+        "antigravityProfilePilot.rateLimitMonitor.cooldownSeconds": {
           "type": "number",
           "default": 60,
           "minimum": 10,
@@ -90,6 +249,7 @@
   },
   "scripts": {
     "package": "npx -y @vscode/vsce package --no-dependencies",
-    "install:ide": "npm run package && \"/Applications/Antigravity IDE.app/Contents/Resources/app/bin/antigravity-ide\" --install-extension antigravity-account-switcher-*.vsix --force"
+    "release": "bash release.sh",
+    "install:ide": "npm run package && \"/Applications/Antigravity IDE.app/Contents/Resources/app/bin/antigravity-ide\" --install-extension antigravity-profile-pilot-*.vsix --force"
   }
 }

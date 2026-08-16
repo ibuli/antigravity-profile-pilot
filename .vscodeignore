@@ -6,3 +6,8 @@ node_modules/**
 .vscodeignore
 *.vsix
 install.sh
+install.ps1
+install.bat
+release.sh
+.github/**
+.DS_Store
