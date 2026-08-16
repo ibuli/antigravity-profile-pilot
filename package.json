@@ -4,6 +4,10 @@
   "description": "Smart multi-account profile pilot and quota manager for Antigravity IDE and App. 1-click account switching to bypass Gemini & Claude rate limits with real-time quota drill-downs.",
   "version": "1.0.0",
   "publisher": "BurhanBharmal",
+  "author": {
+    "name": "Burhan Bharmal"
+  },
+  "homepage": "https://github.com/ibuli/antigravity-profile-pilot",
   "license": "MIT",
   "icon": "resources/icon.png",
   "repository": {
@@ -15,7 +19,7 @@
   },
   "categories": [
     "Other",
-    "Machine Learning"
+    "Data Science"
   ],
   "keywords": [
     "antigravity",
