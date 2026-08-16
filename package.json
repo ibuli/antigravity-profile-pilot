@@ -1,0 +1,95 @@
+{
+  "name": "antigravity-account-switcher",
+  "displayName": "Antigravity Multi-Account Switcher (macOS Native)",
+  "description": "Native macOS multi-account session manager for Antigravity IDE. One-click profile switching to bypass model rate limits without external dependencies.",
+  "version": "2.1.0",
+  "publisher": "local",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/antigravity-account-switcher"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "antigravity",
+    "accounts",
+    "profiles",
+    "switcher",
+    "rate-limit",
+    "macos"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "*",
+    "onStartupFinished",
+    "onCommand:antigravityAccountSwitcher.saveCurrentProfile",
+    "onCommand:antigravityAccountSwitcher.switchProfile",
+    "onCommand:antigravityAccountSwitcher.switchProfileSlot",
+    "onCommand:antigravityAccountSwitcher.deleteProfile",
+    "onCommand:antigravityAccountSwitcher.listProfiles"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "antigravityAccountSwitcher.saveCurrentProfile",
+        "title": "Antigravity: Save Current Profile"
+      },
+      {
+        "command": "antigravityAccountSwitcher.switchProfile",
+        "title": "Antigravity: Switch Profile"
+      },
+      {
+        "command": "antigravityAccountSwitcher.switchProfileSlot",
+        "title": "Antigravity: Switch Profile Slot"
+      },
+      {
+        "command": "antigravityAccountSwitcher.deleteProfile",
+        "title": "Antigravity: Delete Profile"
+      },
+      {
+        "command": "antigravityAccountSwitcher.listProfiles",
+        "title": "Antigravity: List Profiles"
+      }
+    ],
+    "configuration": {
+      "title": "Antigravity Account Switcher",
+      "properties": {
+        "antigravityAccountSwitcher.maxProfiles": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Maximum number of profile slots shown in the status bar."
+        },
+        "antigravityAccountSwitcher.rateLimitMonitor.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic rate limit detection from Antigravity log files."
+        },
+        "antigravityAccountSwitcher.rateLimitMonitor.scanIntervalSeconds": {
+          "type": "number",
+          "default": 15,
+          "minimum": 5,
+          "maximum": 300,
+          "description": "How often Antigravity logs are scanned for rate limit messages (in seconds)."
+        },
+        "antigravityAccountSwitcher.rateLimitMonitor.cooldownSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 10,
+          "maximum": 600,
+          "description": "Minimum delay between repeated rate limit alerts (in seconds)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "package": "npx -y @vscode/vsce package --no-dependencies",
+    "install:ide": "npm run package && \"/Applications/Antigravity IDE.app/Contents/Resources/app/bin/antigravity-ide\" --install-extension antigravity-account-switcher-*.vsix --force"
+  }
+}
