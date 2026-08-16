@@ -1,22 +1,23 @@
 #!/bin/bash
 set -e
 
-# Profile Pilot Release & Tagging Script
+# Profile Pilot Release & Tagging Automation Script
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
-VERSION_ARG="$1"
+CURRENT_VER=$(node -p "require('./package.json').version")
+INPUT_ARG="$1"
 
-if [ -z "$VERSION_ARG" ]; then
-  CURRENT_VER=$(node -p "require('./package.json').version")
+if [ -z "$INPUT_ARG" ]; then
   echo "Current version: $CURRENT_VER"
-  read -p "Enter new release version (e.g. 1.0.0, 1.0.1, 1.1.0): " NEW_VER
-else
-  NEW_VER="$VERSION_ARG"
+  read -p "Enter bump type (patch/minor/major) or specific version (e.g. 1.0.1): " INPUT_ARG
 fi
 
-# Remove leading 'v' if provided
-NEW_VER="${NEW_VER#v}"
+if [ "$INPUT_ARG" = "patch" ] || [ "$INPUT_ARG" = "minor" ] || [ "$INPUT_ARG" = "major" ]; then
+  NEW_VER=$(npx -y semver "$CURRENT_VER" -i "$INPUT_ARG")
+else
+  NEW_VER="${INPUT_ARG#v}"
+fi
 
 if [ -z "$NEW_VER" ]; then
   echo "Error: Version cannot be empty."
@@ -26,7 +27,7 @@ fi
 TAG_NAME="v$NEW_VER"
 
 echo "===================================================="
-echo "Preparing Release: $TAG_NAME"
+echo "Automating Release: $TAG_NAME (from $CURRENT_VER)"
 echo "===================================================="
 
 # 1. Update package.json
@@ -50,31 +51,30 @@ echo "✓ Updated install.ps1 to $NEW_VER"
 rm -f antigravity-profile-pilot-*.vsix 2>/dev/null || true
 npm run package
 
-# 5. Git commit & Tag
+# 5. Git Commit & Tag
 git add package.json install.sh install.ps1
 if [ -f "package-lock.json" ]; then
   git add package-lock.json
 fi
 
-# Commit if there are changes
 if ! git diff-index --quiet HEAD --; then
   git commit -m "chore(release): $TAG_NAME"
 fi
 
-# Check if tag exists
 if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-  echo "Tag $TAG_NAME already exists locally. Updating tag..."
   git tag -d "$TAG_NAME" >/dev/null 2>&1 || true
 fi
 
 git tag -a "$TAG_NAME" -m "Release $TAG_NAME - Profile Pilot for Antigravity"
 echo "✓ Created git tag: $TAG_NAME"
 
+# 6. Push to remote
+echo "Pushing $TAG_NAME and main to GitHub..."
+git push origin main --tags
+
 echo ""
 echo "===================================================="
-echo "🎉 Release $TAG_NAME is ready!"
+echo "🎉 Release $TAG_NAME published successfully to GitHub!"
+echo "GitHub Actions is now generating release notes and attaching the VSIX package."
+echo "View release at: https://github.com/ibuli/antigravity-profile-pilot/releases/tag/$TAG_NAME"
 echo "===================================================="
-echo "To publish this release to GitHub & trigger automated workflow, run:"
-echo ""
-echo "  git push origin main --tags"
-echo ""

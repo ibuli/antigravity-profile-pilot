@@ -1,0 +1,111 @@
+name: 🚀 Automated Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version Bump Type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      custom_version:
+        description: 'Custom Version (leave empty to use bump type)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configure Git User
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Compute New Version
+        id: versioning
+        run: |
+          CURRENT_VER=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VER"
+          
+          if [ -n "${{ github.event.inputs.custom_version }}" ]; then
+            NEW_VER="${{ github.event.inputs.custom_version }}"
+          else
+            NEW_VER=$(npx semver $CURRENT_VER -i ${{ github.event.inputs.bump_type }})
+          fi
+          
+          echo "NEW_VERSION=$NEW_VER" >> $GITHUB_ENV
+          echo "TAG_NAME=v$NEW_VER" >> $GITHUB_ENV
+          echo "New Version: $NEW_VER"
+
+      - name: Update Version in Files
+        run: |
+          # 1. Update package.json
+          node -e "
+            const fs = require('fs');
+            const p = require('./package.json');
+            p.version = process.env.NEW_VERSION;
+            fs.writeFileSync('./package.json', JSON.stringify(p, null, 2) + '\n');
+          "
+          
+          # 2. Update install.sh
+          sed -i "s/TARGET_NAME=\"antigravity-profile-pilot-[0-9.]*\"/TARGET_NAME=\"antigravity-profile-pilot-${NEW_VERSION}\"/g" install.sh
+          
+          # 3. Update install.ps1
+          sed -i "s/\$TargetVersion = \"[0-9.]*\"/\$TargetVersion = \"${NEW_VERSION}\"/g" install.ps1
+
+      - name: Package VSIX Extension
+        run: |
+          npx -y @vscode/vsce package --no-dependencies
+
+      - name: Commit & Tag Release
+        run: |
+          git add package.json install.sh install.ps1
+          git commit -m "chore(release): v${NEW_VERSION} [skip ci]"
+          git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION} - Profile Pilot for Antigravity"
+          git push origin main --tags
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ env.NEW_VERSION }}"
+          name: "Release v${{ env.NEW_VERSION }}"
+          files: "*.vsix"
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to Open VSX (Optional)
+        if: env.OVSX_PAT != ''
+        run: |
+          npx -y ovsx publish *.vsix -p ${{ secrets.OVSX_PAT }}
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+
+      - name: Publish to VS Code Marketplace (Optional)
+        if: env.VSCE_PAT != ''
+        run: |
+          npx -y @vscode/vsce publish -p ${{ secrets.VSCE_PAT }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
