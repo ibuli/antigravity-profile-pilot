@@ -2,6 +2,10 @@
 
 A smart, native, zero-dependency multi-account profile pilot and quota manager for **Google Antigravity IDE** and the **Antigravity Companion App** on **macOS** and **Windows**. Seamlessly switch between multiple Google accounts with 1-click to bypass Gemini and Claude rate limits without repeated log-ins.
 
+<p align="center">
+  <img src="resources/screenshot.png" alt="Profile Pilot for Antigravity" width="460" />
+</p>
+
 ---
 
 ## 🚀 Key Features
