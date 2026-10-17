@@ -13,7 +13,8 @@ const DEFAULT_MODELS = [
   {
     name: "Gemini 3.8 Flash (High)",
     shortName: "Gemini 3.8 Flash (High)",
-    badge: "Fast",
+    badge: "High",
+    effort: "High",
     pool: "gemini",
     status: "available",
     isCurrentLineup: true
@@ -21,7 +22,8 @@ const DEFAULT_MODELS = [
   {
     name: "Gemini 3.8 Flash (Medium)",
     shortName: "Gemini 3.8 Flash (Medium)",
-    badge: "Fast",
+    badge: "Medium",
+    effort: "Medium",
     pool: "gemini",
     status: "available",
     isCurrentLineup: true
@@ -29,7 +31,8 @@ const DEFAULT_MODELS = [
   {
     name: "Gemini 3.8 Flash (Low)",
     shortName: "Gemini 3.8 Flash (Low)",
-    badge: "Fast",
+    badge: "Low",
+    effort: "Low",
     pool: "gemini",
     status: "available",
     isCurrentLineup: true
@@ -37,10 +40,13 @@ const DEFAULT_MODELS = [
   {
     name: "Gemini 4 Argon",
     shortName: "Gemini 4 Argon",
-    badge: "Unavailable",
+    badge: "Unavailable ℹ️",
+    tagTitle: "Unavailable",
+    tagDescription: "This model is currently unavailable for generation in Google Antigravity.",
+    notice: "Unavailable ℹ️",
     pool: "gemini",
     status: "unavailable",
-    unavailableReason: "Not yet available in Google Antigravity (Upcoming Preview)",
+    unavailableReason: "This model is currently unavailable for generation in Google Antigravity.",
     isCurrentLineup: true
   },
 
@@ -48,28 +54,37 @@ const DEFAULT_MODELS = [
   {
     name: "Claude Sonnet 4.6 (Thinking)",
     shortName: "Claude Sonnet 4.6",
-    badge: "Deep Reasoning",
+    badge: "Notice ℹ️",
+    tagTitle: "Notice",
+    tagDescription: "Prompts and outputs are processed subject to partner availability and terms.",
+    notice: "Notice ℹ️",
+    noticeText: "Prompts and outputs are processed subject to partner availability and terms.",
     pool: "claude_gpt",
     status: "available",
-    notice: "Partner Model",
     isCurrentLineup: true
   },
   {
     name: "Claude Opus 4.6 (Thinking)",
     shortName: "Claude Opus 4.6",
-    badge: "Deep Reasoning",
+    badge: "Notice ℹ️",
+    tagTitle: "Notice",
+    tagDescription: "Prompts and outputs are processed subject to partner availability and terms.",
+    notice: "Notice ℹ️",
+    noticeText: "Prompts and outputs are processed subject to partner availability and terms.",
     pool: "claude_gpt",
     status: "available",
-    notice: "Partner Model",
     isCurrentLineup: true
   },
   {
     name: "GPT-OSS 120B (Medium)",
     shortName: "GPT-OSS 120B",
-    badge: "Open Weights",
+    badge: "Notice ℹ️",
+    tagTitle: "Notice",
+    tagDescription: "Open weights model. Prompts and outputs are subject to partner availability and terms.",
+    notice: "Notice ℹ️",
+    noticeText: "Open weights model. Prompts and outputs are subject to partner availability and terms.",
     pool: "claude_gpt",
     status: "available",
-    notice: "Open Weights",
     isCurrentLineup: true
   }
 ];
@@ -223,7 +238,7 @@ function createEmptySlots(maxProfiles) {
 // Model Classification Helper
 function classifyModel(modelName) {
   if (!modelName || typeof modelName !== "string") {
-    return { name: "Gemini 3.8 Flash (High)", shortName: "Gemini 3.8 Flash", badge: "Fast", pool: "gemini", status: "available", isCurrentLineup: true };
+    return { name: "Gemini 3.8 Flash (High)", shortName: "Gemini 3.8 Flash", badge: "High", effort: "High", pool: "gemini", status: "available", isCurrentLineup: true };
   }
   const cleanName = modelName.trim();
   const lower = cleanName.toLowerCase();
@@ -233,10 +248,13 @@ function classifyModel(modelName) {
     return {
       name: "Gemini 4 Argon",
       shortName: "Gemini 4 Argon",
-      badge: "Unavailable",
+      badge: "Unavailable ℹ️",
+      tagTitle: "Unavailable",
+      tagDescription: "This model is currently unavailable for generation in Google Antigravity.",
+      notice: "Unavailable ℹ️",
       pool: "gemini",
       status: "unavailable",
-      unavailableReason: "Not yet available in Google Antigravity (Upcoming Preview)",
+      unavailableReason: "This model is currently unavailable for generation in Google Antigravity.",
       isCurrentLineup: true
     };
   }
@@ -246,7 +264,8 @@ function classifyModel(modelName) {
       return {
         name: "Gemini 3.8 Flash (Medium)",
         shortName: "Gemini 3.8 Flash (Medium)",
-        badge: "Fast",
+        badge: "Medium",
+        effort: "Medium",
         pool: "gemini",
         status: "available",
         isCurrentLineup: true
@@ -256,7 +275,8 @@ function classifyModel(modelName) {
       return {
         name: "Gemini 3.8 Flash (Low)",
         shortName: "Gemini 3.8 Flash (Low)",
-        badge: "Fast",
+        badge: "Low",
+        effort: "Low",
         pool: "gemini",
         status: "available",
         isCurrentLineup: true
@@ -265,7 +285,8 @@ function classifyModel(modelName) {
     return {
       name: "Gemini 3.8 Flash (High)",
       shortName: "Gemini 3.8 Flash (High)",
-      badge: "Fast",
+      badge: "High",
+      effort: "High",
       pool: "gemini",
       status: "available",
       isCurrentLineup: true
@@ -276,10 +297,13 @@ function classifyModel(modelName) {
     return {
       name: "Claude Sonnet 4.6 (Thinking)",
       shortName: "Claude Sonnet 4.6",
-      badge: "Deep Reasoning",
+      badge: "Notice ℹ️",
+      tagTitle: "Notice",
+      tagDescription: "Prompts and outputs are processed subject to partner availability and terms.",
+      notice: "Notice ℹ️",
+      noticeText: "Prompts and outputs are processed subject to partner availability and terms.",
       pool: "claude_gpt",
       status: "available",
-      notice: "Partner Model",
       isCurrentLineup: true
     };
   }
@@ -288,10 +312,13 @@ function classifyModel(modelName) {
     return {
       name: "Claude Opus 4.6 (Thinking)",
       shortName: "Claude Opus 4.6",
-      badge: "Deep Reasoning",
+      badge: "Notice ℹ️",
+      tagTitle: "Notice",
+      tagDescription: "Prompts and outputs are processed subject to partner availability and terms.",
+      notice: "Notice ℹ️",
+      noticeText: "Prompts and outputs are processed subject to partner availability and terms.",
       pool: "claude_gpt",
       status: "available",
-      notice: "Partner Model",
       isCurrentLineup: true
     };
   }
@@ -300,10 +327,13 @@ function classifyModel(modelName) {
     return {
       name: "GPT-OSS 120B (Medium)",
       shortName: "GPT-OSS 120B",
-      badge: "Open Weights",
+      badge: "Notice ℹ️",
+      tagTitle: "Notice",
+      tagDescription: "Open weights model. Prompts and outputs are subject to partner availability and terms.",
+      notice: "Notice ℹ️",
+      noticeText: "Open weights model. Prompts and outputs are subject to partner availability and terms.",
       pool: "claude_gpt",
       status: "available",
-      notice: "Open Weights",
       isCurrentLineup: true
     };
   }
@@ -818,8 +848,8 @@ function isModelAvailableForSlot(modelObj, tierInfo) {
     return {
       available: false,
       isUnavailable: true,
-      badge: "Unavailable",
-      reason: modelObj.unavailableReason || `"${modelObj.name}" is not yet available in Google Antigravity (Upcoming Preview).`
+      badge: "Unavailable ℹ️",
+      reason: modelObj.unavailableReason || `"${modelObj.name}" is currently unavailable for generation in Google Antigravity.`
     };
   }
   if (!tierInfo) return { available: true, badge: "", reason: "" };
@@ -1636,9 +1666,9 @@ class AntigravityModelTreeItem extends vscode.TreeItem {
 
     if (availability.isUnavailable || modelObj.status === "unavailable") {
       this.contextValue = "unavailableModelItem";
-      this.description = `Notice: Unavailable (Upcoming Preview)`;
+      this.description = "Unavailable ℹ️";
       this.iconPath = new vscode.ThemeIcon("circle-slash", new vscode.ThemeColor("disabledForeground"));
-      this.tooltip = `Model: ${modelObj.name}\nStatus: Unavailable in Antigravity (Upcoming Preview)\nNotice: ${modelObj.unavailableReason || availability.reason || "This model is an upcoming preview and not yet available for generation in Google Antigravity."}`;
+      this.tooltip = `Model: ${modelObj.name}\nStatus: Unavailable ℹ️\nNotice: ${modelObj.unavailableReason || availability.reason || "This model is currently unavailable for generation in Google Antigravity."}`;
       this.command = {
         command: "antigravityProfilePilot.showModelTierInfo",
         title: "Model Availability Notice",
@@ -1656,9 +1686,10 @@ class AntigravityModelTreeItem extends vscode.TreeItem {
       };
     } else if (isCurrentModel) {
       this.contextValue = "currentModelItem";
-      this.description = `● Active (${modelObj.badge}${reqText})`;
+      const badgeText = modelObj.badge || "Active";
+      this.description = `● Active (${badgeText}${reqText})`;
       this.iconPath = new vscode.ThemeIcon("sparkle", new vscode.ThemeColor("charts.yellow"));
-      this.tooltip = `Model: ${modelObj.name} [Available]\nBadge: ${modelObj.badge}${usageInfo ? `\nUsage: ${usageInfo.used} requests recorded` : ""}\nCurrently active in Antigravity.`;
+      this.tooltip = `Model: ${modelObj.name} [Available]\nBadge: ${badgeText}${usageInfo ? `\nUsage: ${usageInfo.used} requests recorded` : ""}\nCurrently active in Antigravity.`;
       this.command = {
         command: "antigravityProfilePilot.selectActiveModel",
         title: "Set Active Model",
@@ -1666,10 +1697,10 @@ class AntigravityModelTreeItem extends vscode.TreeItem {
       };
     } else {
       this.contextValue = "availableItem";
-      const noticeTag = modelObj.notice ? ` • Notice ℹ️` : "";
-      this.description = `${modelObj.badge}${noticeTag}${reqText}`;
+      const badgeText = modelObj.badge || "Available";
+      this.description = `${badgeText}${reqText}`;
       this.iconPath = new vscode.ThemeIcon("check", new vscode.ThemeColor("charts.green"));
-      this.tooltip = `Model: ${modelObj.name} [Available]\nBadge: ${modelObj.badge}${modelObj.notice ? `\nNotice: ${modelObj.notice}` : ""}${usageInfo ? `\nUsage: ${usageInfo.used} requests recorded` : ""}\nClick to set as active model.`;
+      this.tooltip = `Model: ${modelObj.name} [Available]\nBadge: ${badgeText}${modelObj.noticeText ? `\nNotice: ${modelObj.noticeText}` : (modelObj.notice ? `\nNotice: ${modelObj.notice}` : "")}${usageInfo ? `\nUsage: ${usageInfo.used} requests recorded` : ""}\nClick to set as active model.`;
       this.command = {
         command: "antigravityProfilePilot.selectActiveModel",
         title: "Set Active Model",
@@ -2155,12 +2186,12 @@ function activate(context) {
         const detailMsg =
           `ℹ️ Model Availability Notice:\n\n` +
           `• Model: ${modelName}\n` +
-          `• Status: Unavailable in Google Antigravity (Upcoming Preview)\n` +
-          `• Notice: ${modelObj.unavailableReason || availability.reason || "Not yet available in Google Antigravity (Upcoming Preview)."}\n\n` +
-          `Google Antigravity lists this model in its catalog as an upcoming preview. It is not currently available for prompt generation in any account tier.`;
+          `• Status: Unavailable ℹ️\n` +
+          `• Notice: ${modelObj.unavailableReason || availability.reason || "This model is currently unavailable for generation in Google Antigravity."}\n\n` +
+          `Google Antigravity lists "${modelName}" as currently unavailable in this environment. It cannot be used for generation at this time.`;
 
         const choice = await vscode.window.showInformationMessage(
-          `Notice: "${modelName}" is currently unavailable in Google Antigravity (Upcoming Preview).`,
+          `Notice: "${modelName}" is currently unavailable in Google Antigravity.`,
           { modal: true, detail: detailMsg },
           "Select an Available Model",
           "Close"
@@ -2341,8 +2372,8 @@ function activate(context) {
 
         if (targetModelObj && (targetModelObj.status === "unavailable" || avail.isUnavailable)) {
           vscode.window.showInformationMessage(
-            `Notice: "${directModel}" is currently unavailable in Google Antigravity (Upcoming Preview).`,
-            { modal: true, detail: `Google Antigravity lists "${directModel}" as an upcoming preview model. It is not currently available for prompt generation in any account tier.` }
+            `Notice: "${directModel}" is currently unavailable in Google Antigravity.`,
+            { modal: true, detail: `Google Antigravity lists "${directModel}" as currently unavailable in this environment. It is not currently available for prompt generation.` }
           );
           return;
         }
@@ -2394,21 +2425,23 @@ function activate(context) {
           description = `(${m.badge}) [Currently Active]`;
         } else if (isUnavailable) {
           label = `🚫 ${m.name}`;
-          description = `Notice: Unavailable (Upcoming Preview)`;
+          description = `Unavailable ℹ️`;
         } else if (!avail.available) {
           label = `🔒 ${m.name}`;
           description = `(${m.badge}) [Requires Pro/Paid Tier]`;
-        } else {
-          const noticeTag = m.notice ? ` • Notice ℹ️ (${m.notice})` : "";
+        } else if (m.badge === "Notice ℹ️" || m.notice) {
           label = `  ${m.name}`;
-          description = `(${m.badge})${noticeTag} [Available]`;
+          description = `Notice ℹ️ [Available]`;
+        } else {
+          label = `  ${m.name}`;
+          description = `(${m.badge}) [Available]`;
         }
 
         return {
           label,
           description,
           detail: isUnavailable
-            ? `Notice: ${m.unavailableReason || "Upcoming preview model, not yet available for generation."}`
+            ? `Notice: ${m.unavailableReason || "This model is currently unavailable for generation in Google Antigravity."}`
             : (!avail.available ? avail.reason : `${m.pool === "gemini" ? "Gemini Models Pool" : "Claude & GPT Pool"}`),
           model: m.name,
           available: avail.available,
@@ -2439,8 +2472,8 @@ function activate(context) {
         selectedModel = input.trim();
       } else if (chosen.isUnavailable || (chosen.modelObj && chosen.modelObj.status === "unavailable")) {
         vscode.window.showInformationMessage(
-          `Notice: "${selectedModel}" is currently unavailable in Google Antigravity (Upcoming Preview).`,
-          { modal: true, detail: `Google Antigravity lists "${selectedModel}" as an upcoming preview model. It is not currently available for prompt generation in any account tier.` }
+          `Notice: "${selectedModel}" is currently unavailable in Google Antigravity.`,
+          { modal: true, detail: `Google Antigravity lists "${selectedModel}" as currently unavailable in this environment. It is not currently available for prompt generation.` }
         );
         return;
       } else if (!chosen.available && chosen.modelObj) {
