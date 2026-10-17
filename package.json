@@ -2,7 +2,7 @@
   "name": "antigravity-profile-pilot",
   "displayName": "Profile Pilot for Antigravity (macOS & Windows)",
   "description": "Smart multi-account profile pilot and quota manager for Antigravity IDE and App. 1-click account switching to bypass Gemini & Claude rate limits with real-time quota drill-downs.",
-  "version": "1.0.0",
+  "version": "3.3.2",
   "publisher": "BurhanBharmal",
   "author": {
     "name": "Burhan Bharmal"
@@ -36,8 +36,6 @@
   ],
   "main": "./extension.js",
   "activationEvents": [
-    "*",
-    "onStartupFinished",
     "onView:antigravityProfilePilot.slotsView",
     "onCommand:antigravityProfilePilot.saveCurrentProfile",
     "onCommand:antigravityProfilePilot.switchProfile",
@@ -50,7 +48,9 @@
     "onCommand:antigravityProfilePilot.addCustomModel",
     "onCommand:antigravityProfilePilot.showUsageBreakdown",
     "onCommand:antigravityProfilePilot.addNewAccountWizard",
-    "onCommand:antigravityProfilePilot.showQuickGuide"
+    "onCommand:antigravityProfilePilot.showQuickGuide",
+    "onCommand:antigravityProfilePilot.showModelTierInfo",
+    "onCommand:antigravityProfilePilot.setSlotTier"
   ],
   "contributes": {
     "viewsContainers": {
@@ -137,6 +137,16 @@
         "icon": "$(info)"
       },
       {
+        "command": "antigravityProfilePilot.showModelTierInfo",
+        "title": "View Plan Tier & Model Availability",
+        "icon": "$(lock)"
+      },
+      {
+        "command": "antigravityProfilePilot.setSlotTier",
+        "title": "Set Account Plan Tier (Pro / 3rd-Party / Enterprise / Free)",
+        "icon": "$(workspace-trusted)"
+      },
+      {
         "command": "antigravityProfilePilot.deleteProfile",
         "title": "Profile Pilot: Delete Profile"
       },
@@ -200,20 +210,30 @@
           "group": "inline@4"
         },
         {
-          "command": "antigravityProfilePilot.renameProfileSlot",
+          "command": "antigravityProfilePilot.setSlotTier",
           "when": "view == antigravityProfilePilot.slotsView && (viewItem == occupiedSlot || viewItem == activeSlot)",
           "group": "inline@5"
         },
         {
-          "command": "antigravityProfilePilot.deleteProfileSlotDirect",
+          "command": "antigravityProfilePilot.renameProfileSlot",
           "when": "view == antigravityProfilePilot.slotsView && (viewItem == occupiedSlot || viewItem == activeSlot)",
           "group": "inline@6"
+        },
+        {
+          "command": "antigravityProfilePilot.deleteProfileSlotDirect",
+          "when": "view == antigravityProfilePilot.slotsView && (viewItem == occupiedSlot || viewItem == activeSlot)",
+          "group": "inline@7"
         }
       ]
     },
     "configuration": {
       "title": "Profile Pilot for Antigravity",
       "properties": {
+        "antigravityProfilePilot.slotTiers": {
+          "type": "object",
+          "default": {},
+          "description": "Plan tier overrides per slot (e.g. {\"1\": \"auto\", \"2\": \"paid_third_party\", \"3\": \"enterprise\"}). Supported values: 'auto', 'g1-pro-tier', 'g1-ultra-tier', 'enterprise', 'paid_third_party', 'byok', 'free'."
+        },
         "antigravityProfilePilot.maxProfiles": {
           "type": "number",
           "default": 5,
@@ -252,8 +272,9 @@
     }
   },
   "scripts": {
-    "package": "npx -y @vscode/vsce package --no-dependencies",
+    "package": "npx -y @vscode/vsce package --no-dependencies --allow-star-activation",
     "release": "bash release.sh",
-    "install:ide": "npm run package && \"/Applications/Antigravity IDE.app/Contents/Resources/app/bin/antigravity-ide\" --install-extension antigravity-profile-pilot-*.vsix --force"
+    "install:ide": "npm run package && \"/Applications/Antigravity IDE.app/Contents/Resources/app/bin/antigravity-ide\" --install-extension antigravity-profile-pilot-*.vsix --force",
+    "install:vscode": "npm run package && code --install-extension antigravity-profile-pilot-*.vsix --force"
   }
 }

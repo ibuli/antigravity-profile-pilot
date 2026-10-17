@@ -2,7 +2,7 @@
 $ErrorActionPreference = "Stop"
 
 $PluginDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$TargetVersion = "1.0.0"
+$TargetVersion = "3.3.2"
 $TargetName = "antigravity-profile-pilot-$TargetVersion"
 $VsixFile = Join-Path $PluginDir "antigravity-profile-pilot-$TargetVersion.vsix"
 

@@ -11,3 +11,4 @@ install.bat
 release.sh
 .github/**
 .DS_Store
+service-launcher.mjs
