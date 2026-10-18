@@ -40,13 +40,12 @@ const DEFAULT_MODELS = [
   {
     name: "Gemini 4 Argon",
     shortName: "Gemini 4 Argon",
-    badge: "Unavailable ℹ️",
-    tagTitle: "Unavailable",
-    tagDescription: "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.",
-    notice: "Unavailable ℹ️",
+    badge: "Fast",
+    effort: "Fast",
     pool: "gemini",
-    status: "unavailable",
+    status: "available",
     unavailableReason: "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.",
+    requiredTier: "ultra_or_paid_pro",
     isCurrentLineup: true
   },
 
@@ -248,13 +247,12 @@ function classifyModel(modelName) {
     return {
       name: "Gemini 4 Argon",
       shortName: "Gemini 4 Argon",
-      badge: "Unavailable ℹ️",
-      tagTitle: "Unavailable",
-      tagDescription: "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.",
-      notice: "Unavailable ℹ️",
+      badge: "Fast",
+      effort: "Fast",
       pool: "gemini",
-      status: "unavailable",
+      status: "available",
       unavailableReason: "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.",
+      requiredTier: "ultra_or_paid_pro",
       isCurrentLineup: true
     };
   }
@@ -844,7 +842,47 @@ function getSlotTierInfo(slotData, isActive = false) {
 }
 
 function isModelAvailableForSlot(modelObj, tierInfo) {
-  if (modelObj && modelObj.status === "unavailable") {
+  if (!modelObj) return { available: true, badge: "", reason: "" };
+
+  const mName = (modelObj.name || "").toLowerCase();
+  const mShort = (modelObj.shortName || "").toLowerCase();
+  const isArgon = mName.includes("argon") || mShort.includes("argon");
+
+  // Check if account has Pro or higher / Ultra / Paid subscription:
+  const isPaidSubscriber = Boolean(
+    tierInfo && (
+      tierInfo.isProOrHigher ||
+      tierInfo.isPaid ||
+      tierInfo.tierId === "g1-ultra-tier" ||
+      tierInfo.tierId === "g1-pro-tier" ||
+      tierInfo.tierId === "enterprise" ||
+      tierInfo.tierId === "paid_third_party" ||
+      tierInfo.tierId === "googler" ||
+      tierInfo.tierId === "byok"
+    )
+  );
+
+  // Check if model is explicitly present in slot's detected models from state.vscdb:
+  const norm = s => (s || "").toLowerCase().replace(/[-_]/g, " ").replace(/\s+/g, " ").trim();
+  const nName = norm(mName);
+  const nShort = norm(mShort);
+  const isExplicitlyEnabled = Boolean(
+    tierInfo && Array.isArray(tierInfo.models) && tierInfo.models.some(m => {
+      const nm = norm(m);
+      return nm === nName || nm === nShort || nm.includes(nShort) || nName.includes(nm);
+    })
+  );
+
+  // Gemini 4 Argon: Exclusively available to Ultra and paid Pro plan subscribers
+  if (isArgon) {
+    if (isPaidSubscriber || isExplicitlyEnabled) {
+      return {
+        available: true,
+        isUnavailable: false,
+        badge: modelObj.badge || "Fast",
+        reason: ""
+      };
+    }
     return {
       available: false,
       isUnavailable: true,
@@ -852,23 +890,20 @@ function isModelAvailableForSlot(modelObj, tierInfo) {
       reason: modelObj.unavailableReason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers."
     };
   }
-  if (!tierInfo) return { available: true, badge: "", reason: "" };
-  if (tierInfo.isProOrHigher) {
-    return { available: true, badge: "", reason: "" };
+
+  // Statically unavailable fallback for non-Argon models if any
+  if (modelObj.status === "unavailable") {
+    return {
+      available: false,
+      isUnavailable: true,
+      badge: "Unavailable ℹ️",
+      reason: modelObj.unavailableReason || "This model is currently unavailable."
+    };
   }
 
-  const mName = (modelObj.name || "").toLowerCase();
-  const mShort = (modelObj.shortName || "").toLowerCase();
-
-  // If tierInfo contains explicit allowed models from state.vscdb:
-  if (Array.isArray(tierInfo.models) && tierInfo.models.length > 0) {
-    const isExplicitlyEnabled = tierInfo.models.some(m => {
-      const lower = m.toLowerCase();
-      return lower === mName || lower.includes(mShort) || mName.includes(lower);
-    });
-    if (isExplicitlyEnabled) {
-      return { available: true, badge: "", reason: "" };
-    }
+  if (!tierInfo) return { available: true, badge: "", reason: "" };
+  if (tierInfo.isProOrHigher || isExplicitlyEnabled) {
+    return { available: true, badge: "", reason: "" };
   }
 
   // Known Pro/Ultra exclusive indicators
@@ -884,6 +919,7 @@ function isModelAvailableForSlot(modelObj, tierInfo) {
   if (isProExclusive) {
     return {
       available: false,
+      isUnavailable: false,
       requiredTier: "Google AI Pro or Third-Party Paid Tier",
       badge: "Requires Pro/Paid Tier",
       reason: `"${modelObj.name}" is locked on ${tierInfo.tierName}. A Google AI Pro, Ultra, or Third-Party Paid Tier is required.`
@@ -1664,12 +1700,12 @@ class AntigravityModelTreeItem extends vscode.TreeItem {
     const usageInfo = slotData && slotData.usage ? (slotData.usage[modelObj.name] || slotData.usage[modelObj.shortName]) : null;
     const reqText = usageInfo && usageInfo.used ? ` • ${usageInfo.used} req` : "";
 
-    if (availability.isUnavailable || modelObj.status === "unavailable") {
+    if (availability.isUnavailable) {
       this.contextValue = "unavailableModelItem";
-      this.description = "Unavailable ℹ️";
+      this.description = availability.badge || "Unavailable ℹ️";
       this.iconPath = new vscode.ThemeIcon("circle-slash", new vscode.ThemeColor("disabledForeground"));
-      const noticeText = modelObj.unavailableReason || availability.reason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
-      this.tooltip = `Model: ${modelObj.name}\nStatus: Unavailable ℹ️\nNotice: ${noticeText}`;
+      const noticeText = availability.reason || modelObj.unavailableReason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
+      this.tooltip = `Model: ${modelObj.name}\nStatus: ${availability.badge || "Unavailable ℹ️"}\nNotice: ${noticeText}`;
       this.command = {
         command: "antigravityProfilePilot.showModelTierInfo",
         title: "Model Availability Notice",
@@ -1687,7 +1723,7 @@ class AntigravityModelTreeItem extends vscode.TreeItem {
       };
     } else if (isCurrentModel) {
       this.contextValue = "currentModelItem";
-      const badgeText = modelObj.badge || "Active";
+      const badgeText = availability.badge || modelObj.badge || "Active";
       this.description = `● Active (${badgeText}${reqText})`;
       this.iconPath = new vscode.ThemeIcon("sparkle", new vscode.ThemeColor("charts.yellow"));
       this.tooltip = `Model: ${modelObj.name} [Available]\nBadge: ${badgeText}${usageInfo ? `\nUsage: ${usageInfo.used} requests recorded` : ""}\nCurrently active in Antigravity.`;
@@ -1698,7 +1734,7 @@ class AntigravityModelTreeItem extends vscode.TreeItem {
       };
     } else {
       this.contextValue = "availableItem";
-      const badgeText = modelObj.badge || "Available";
+      const badgeText = availability.badge || modelObj.badge || "Available";
       this.description = `${badgeText}${reqText}`;
       this.iconPath = new vscode.ThemeIcon("check", new vscode.ThemeColor("charts.green"));
       this.tooltip = `Model: ${modelObj.name} [Available]\nBadge: ${badgeText}${modelObj.noticeText ? `\nNotice: ${modelObj.noticeText}` : (modelObj.notice ? `\nNotice: ${modelObj.notice}` : "")}${usageInfo ? `\nUsage: ${usageInfo.used} requests recorded` : ""}\nClick to set as active model.`;
@@ -2183,8 +2219,8 @@ function activate(context) {
         return sTier && sTier.isProOrHigher;
       });
 
-      if (modelObj && (modelObj.status === "unavailable" || availability.isUnavailable)) {
-        const noticeText = modelObj.unavailableReason || availability.reason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
+      if (modelObj && availability.isUnavailable) {
+        const noticeText = availability.reason || modelObj.unavailableReason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
         const detailMsg =
           `ℹ️ Model Availability Notice:\n\n` +
           `• Model: ${modelName}\n` +
@@ -2375,8 +2411,8 @@ function activate(context) {
         const targetModelObj = dynamicCatalog.find(m => m.name === directModel || m.shortName === directModel) || classifyModel(directModel);
         const avail = isModelAvailableForSlot(targetModelObj, activeTierInfo);
 
-        if (targetModelObj && (targetModelObj.status === "unavailable" || avail.isUnavailable)) {
-          const noticeMsg = targetModelObj.unavailableReason || avail.reason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
+        if (targetModelObj && avail.isUnavailable) {
+          const noticeMsg = avail.reason || targetModelObj.unavailableReason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
           vscode.window.showInformationMessage(
             noticeMsg,
             { modal: true, detail: `Notice: ${noticeMsg}` }
@@ -2418,7 +2454,7 @@ function activate(context) {
 
       const modelOptions = dynamicCatalog.map(m => {
         const avail = isModelAvailableForSlot(m, activeTierInfo);
-        const isUnavailable = avail.isUnavailable || m.status === "unavailable";
+        const isUnavailable = avail.isUnavailable;
         const isCurrent = m.name.toLowerCase() === current.toLowerCase() ||
           current.toLowerCase() === m.shortName.toLowerCase() ||
           (m.name.includes("(High)") && (current.toLowerCase() === "gemini 3.8 flash" || current.toLowerCase() === "gemini 3.8"));
@@ -2428,26 +2464,28 @@ function activate(context) {
 
         if (isCurrent) {
           label = `✓ ${m.name}`;
-          description = `(${m.badge}) [Currently Active]`;
+          const badgeText = avail.badge || m.badge || "Active";
+          description = `(${badgeText}) [Currently Active]`;
         } else if (isUnavailable) {
           label = `🚫 ${m.name}`;
-          description = `Unavailable ℹ️`;
+          description = avail.badge || "Unavailable ℹ️";
         } else if (!avail.available) {
           label = `🔒 ${m.name}`;
-          description = `(${m.badge}) [Requires Pro/Paid Tier]`;
+          description = `(${avail.badge || m.badge}) [Requires Pro/Paid Tier]`;
         } else if (m.badge === "Notice ℹ️" || m.notice) {
           label = `  ${m.name}`;
           description = `Notice ℹ️ [Available]`;
         } else {
           label = `  ${m.name}`;
-          description = `(${m.badge}) [Available]`;
+          const badgeText = avail.badge || m.badge || "Available";
+          description = `(${badgeText}) [Available]`;
         }
 
         return {
           label,
           description,
           detail: isUnavailable
-            ? (m.unavailableReason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.")
+            ? (avail.reason || m.unavailableReason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.")
             : (!avail.available ? avail.reason : `${m.pool === "gemini" ? "Gemini Models Pool" : "Claude & GPT Pool"}`),
           model: m.name,
           available: avail.available,
@@ -2476,8 +2514,8 @@ function activate(context) {
         });
         if (!input) return;
         selectedModel = input.trim();
-      } else if (chosen.isUnavailable || (chosen.modelObj && chosen.modelObj.status === "unavailable")) {
-        const noticeMsg = (chosen.modelObj && chosen.modelObj.unavailableReason) || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
+      } else if (chosen.isUnavailable) {
+        const noticeMsg = (chosen.modelObj && (chosen.modelObj.unavailableReason || chosen.detail)) || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
         vscode.window.showInformationMessage(
           noticeMsg,
           { modal: true, detail: `Notice: ${noticeMsg}` }

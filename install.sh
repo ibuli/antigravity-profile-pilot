@@ -2,7 +2,7 @@
 set -e
 
 PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET_NAME="antigravity-profile-pilot-3.3.4"
+TARGET_NAME="antigravity-profile-pilot-3.3.5"
 OLD_NAMES=(
   "antigravity-account-switcher-2.1.0"
   "antigravity-account-switcher-2.2.0"
@@ -25,6 +25,7 @@ OLD_NAMES=(
   "antigravity-profile-pilot-3.3.1"
   "antigravity-profile-pilot-3.3.2"
   "antigravity-profile-pilot-3.3.3"
+  "antigravity-profile-pilot-3.3.4"
   "burhanbharmal.antigravity-profile-pilot-1.0.0"
   "burhanbharmal.antigravity-profile-pilot-1.1.0"
   "burhanbharmal.antigravity-profile-pilot-1.2.0"
@@ -35,6 +36,7 @@ OLD_NAMES=(
   "burhanbharmal.antigravity-profile-pilot-3.3.1"
   "burhanbharmal.antigravity-profile-pilot-3.3.2"
   "burhanbharmal.antigravity-profile-pilot-3.3.3"
+  "burhanbharmal.antigravity-profile-pilot-3.3.4"
 )
 
 echo "===================================================="
