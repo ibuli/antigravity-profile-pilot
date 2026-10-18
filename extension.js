@@ -42,11 +42,11 @@ const DEFAULT_MODELS = [
     shortName: "Gemini 4 Argon",
     badge: "Unavailable ℹ️",
     tagTitle: "Unavailable",
-    tagDescription: "This model is currently unavailable for generation in Google Antigravity.",
+    tagDescription: "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.",
     notice: "Unavailable ℹ️",
     pool: "gemini",
     status: "unavailable",
-    unavailableReason: "This model is currently unavailable for generation in Google Antigravity.",
+    unavailableReason: "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.",
     isCurrentLineup: true
   },
 
@@ -250,11 +250,11 @@ function classifyModel(modelName) {
       shortName: "Gemini 4 Argon",
       badge: "Unavailable ℹ️",
       tagTitle: "Unavailable",
-      tagDescription: "This model is currently unavailable for generation in Google Antigravity.",
+      tagDescription: "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.",
       notice: "Unavailable ℹ️",
       pool: "gemini",
       status: "unavailable",
-      unavailableReason: "This model is currently unavailable for generation in Google Antigravity.",
+      unavailableReason: "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.",
       isCurrentLineup: true
     };
   }
@@ -849,7 +849,7 @@ function isModelAvailableForSlot(modelObj, tierInfo) {
       available: false,
       isUnavailable: true,
       badge: "Unavailable ℹ️",
-      reason: modelObj.unavailableReason || `"${modelObj.name}" is currently unavailable for generation in Google Antigravity.`
+      reason: modelObj.unavailableReason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers."
     };
   }
   if (!tierInfo) return { available: true, badge: "", reason: "" };
@@ -1668,7 +1668,8 @@ class AntigravityModelTreeItem extends vscode.TreeItem {
       this.contextValue = "unavailableModelItem";
       this.description = "Unavailable ℹ️";
       this.iconPath = new vscode.ThemeIcon("circle-slash", new vscode.ThemeColor("disabledForeground"));
-      this.tooltip = `Model: ${modelObj.name}\nStatus: Unavailable ℹ️\nNotice: ${modelObj.unavailableReason || availability.reason || "This model is currently unavailable for generation in Google Antigravity."}`;
+      const noticeText = modelObj.unavailableReason || availability.reason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
+      this.tooltip = `Model: ${modelObj.name}\nStatus: Unavailable ℹ️\nNotice: ${noticeText}`;
       this.command = {
         command: "antigravityProfilePilot.showModelTierInfo",
         title: "Model Availability Notice",
@@ -2183,21 +2184,25 @@ function activate(context) {
       });
 
       if (modelObj && (modelObj.status === "unavailable" || availability.isUnavailable)) {
+        const noticeText = modelObj.unavailableReason || availability.reason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
         const detailMsg =
           `ℹ️ Model Availability Notice:\n\n` +
           `• Model: ${modelName}\n` +
           `• Status: Unavailable ℹ️\n` +
-          `• Notice: ${modelObj.unavailableReason || availability.reason || "This model is currently unavailable for generation in Google Antigravity."}\n\n` +
-          `Google Antigravity lists "${modelName}" as currently unavailable in this environment. It cannot be used for generation at this time.`;
+          `• Notice: ${noticeText}\n\n` +
+          `This model requires a Google AI Ultra or paid Pro subscription.`;
 
         const choice = await vscode.window.showInformationMessage(
-          `Notice: "${modelName}" is currently unavailable in Google Antigravity.`,
+          noticeText,
           { modal: true, detail: detailMsg },
+          "Configure Plan Tier",
           "Select an Available Model",
           "Close"
         );
 
-        if (choice === "Select an Available Model") {
+        if (choice === "Configure Plan Tier" && slotData) {
+          vscode.commands.executeCommand("antigravityProfilePilot.setSlotTier", slotData.slot);
+        } else if (choice === "Select an Available Model") {
           vscode.commands.executeCommand("antigravityProfilePilot.selectActiveModel");
         }
         return;
@@ -2371,9 +2376,10 @@ function activate(context) {
         const avail = isModelAvailableForSlot(targetModelObj, activeTierInfo);
 
         if (targetModelObj && (targetModelObj.status === "unavailable" || avail.isUnavailable)) {
+          const noticeMsg = targetModelObj.unavailableReason || avail.reason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
           vscode.window.showInformationMessage(
-            `Notice: "${directModel}" is currently unavailable in Google Antigravity.`,
-            { modal: true, detail: `Google Antigravity lists "${directModel}" as currently unavailable in this environment. It is not currently available for prompt generation.` }
+            noticeMsg,
+            { modal: true, detail: `Notice: ${noticeMsg}` }
           );
           return;
         }
@@ -2441,7 +2447,7 @@ function activate(context) {
           label,
           description,
           detail: isUnavailable
-            ? `Notice: ${m.unavailableReason || "This model is currently unavailable for generation in Google Antigravity."}`
+            ? (m.unavailableReason || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.")
             : (!avail.available ? avail.reason : `${m.pool === "gemini" ? "Gemini Models Pool" : "Claude & GPT Pool"}`),
           model: m.name,
           available: avail.available,
@@ -2471,9 +2477,10 @@ function activate(context) {
         if (!input) return;
         selectedModel = input.trim();
       } else if (chosen.isUnavailable || (chosen.modelObj && chosen.modelObj.status === "unavailable")) {
+        const noticeMsg = (chosen.modelObj && chosen.modelObj.unavailableReason) || "Gemini 4 Argon is currently available to Ultra and paid Pro plan subscribers.";
         vscode.window.showInformationMessage(
-          `Notice: "${selectedModel}" is currently unavailable in Google Antigravity.`,
-          { modal: true, detail: `Google Antigravity lists "${selectedModel}" as currently unavailable in this environment. It is not currently available for prompt generation.` }
+          noticeMsg,
+          { modal: true, detail: `Notice: ${noticeMsg}` }
         );
         return;
       } else if (!chosen.available && chosen.modelObj) {
