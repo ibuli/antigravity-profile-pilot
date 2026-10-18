@@ -873,9 +873,15 @@ function isModelAvailableForSlot(modelObj, tierInfo) {
     })
   );
 
-  // Gemini 4 Argon: Exclusively available to Ultra and paid Pro plan subscribers
+  // Gemini 4 Argon: Only available if explicitly granted in detected models or on Ultra tier.
+  // Standard Pro accounts without Argon granted by Google still show as Unavailable ℹ️.
   if (isArgon) {
-    if (isPaidSubscriber || isExplicitlyEnabled) {
+    const hasArgonAccess = Boolean(
+      isExplicitlyEnabled ||
+      (tierInfo && tierInfo.tierId === "g1-ultra-tier")
+    );
+
+    if (hasArgonAccess) {
       return {
         available: true,
         isUnavailable: false,
@@ -2226,7 +2232,8 @@ function activate(context) {
           `• Model: ${modelName}\n` +
           `• Status: Unavailable ℹ️\n` +
           `• Notice: ${noticeText}\n\n` +
-          `This model requires a Google AI Ultra or paid Pro subscription.`;
+          `Your active account (${activeSlot && activeSlot.name ? activeSlot.name : "Slot " + activeSlotNum}) is currently on ${tierInfo.tierName}.\n` +
+          `Google restricts Gemini 4 Argon to Ultra plan subscribers and select paid Pro accounts with preview access.`;
 
         const choice = await vscode.window.showInformationMessage(
           noticeText,
